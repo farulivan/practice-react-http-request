@@ -1,6 +1,6 @@
 import MoviesList from './components/MoviesList';
 import './App.css';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 export interface MovieType {
   id?: number;
@@ -10,6 +10,23 @@ export interface MovieType {
 }
 
 function App() {
+  const [movies, setMovies] = useState<MovieType[]>([]);
+
+  const fetchMoviesHandler = async () => {
+    const response = await fetch('https://swapi.dev/api/films');
+    const data = await response.json();
+
+    const transformedMovies = data.results.map((movieData: any) => {
+      return {
+        id: movieData.episode_id,
+        title: movieData.title,
+        openingText: movieData.opening_crawl,
+        releaseDate: movieData.release_date,
+      };
+    });
+    setMovies(transformedMovies);
+  };
+
   const dummyMovies: MovieType[] = [
     {
       id: 1,
@@ -28,10 +45,10 @@ function App() {
   return (
     <Fragment>
       <section>
-        <button>Fetch Movies</button>
+        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
       <section>
-        <MoviesList movies={dummyMovies} />
+        <MoviesList movies={movies} />
       </section>
     </Fragment>
   );
