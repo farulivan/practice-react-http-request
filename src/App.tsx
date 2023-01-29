@@ -11,20 +11,34 @@ export interface MovieType {
 
 function App() {
   const [movies, setMovies] = useState<MovieType[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<null | string>(null);
 
   const fetchMoviesHandler = async () => {
-    const response = await fetch('https://swapi.dev/api/films');
-    const data = await response.json();
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('https://swapi.dev/api/films');
+      if (!response.ok) {
+        setIsLoading(false)
+        throw new Error('Something when wrong!');
+      } 
 
-    const transformedMovies = data.results.map((movieData: any) => {
-      return {
-        id: movieData.episode_id,
-        title: movieData.title,
-        openingText: movieData.opening_crawl,
-        releaseDate: movieData.release_date,
-      };
-    });
-    setMovies(transformedMovies);
+      const data = await response.json();
+
+      const transformedMovies = data.results.map((movieData: any) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        };
+      });
+      setMovies(transformedMovies);
+      setIsLoading(false);
+    } catch (error) {
+      if (error instanceof Error) setError(error.message);
+    }
   };
 
   const dummyMovies: MovieType[] = [
@@ -42,13 +56,19 @@ function App() {
     },
   ];
 
+  let content = <p>Found no movies</p>
+
+  if (movies.length > 0) content = <MoviesList movies={movies} />
+  if (error) content = <p>{error}</p>
+  if (isLoading) content = <p>Loading...</p>
+
   return (
     <Fragment>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
       <section>
-        <MoviesList movies={movies} />
+        {content}
       </section>
     </Fragment>
   );
