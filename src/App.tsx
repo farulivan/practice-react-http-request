@@ -64,6 +64,9 @@ function App() {
     );
     const data = await response.json();
     console.log(data)
+    console.log('Success! Adding movie to database')
+
+    fetchMoviesHandler();
   }
 
   let content = <p>Found no movies</p>;
